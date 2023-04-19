@@ -97,8 +97,15 @@ foreach yr of local non_suppr_years {
 	drop _merge
 	
 	drop if SubjectName == ""
+	replace Enrollment = 0 if Enrollment == .
 	
 	gen TestedCount = TestedRate * Enrollment
 	
 	sort DistrictId DistrictName SubjectName Grade
+	
+	replace Enrollment = Enrollment + Enrollment[_n-1] if Enrollment != 0
+	replace TestedCount = TestedCount + TestedCount[_n-1] if TestedCount != 0
+	
+	replace TestedCount = -1 if TestedCount == 0 // so that we can divide
+	gen Participation =  TestedCount / Enrollment
 }
